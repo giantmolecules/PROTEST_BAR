@@ -10,9 +10,11 @@ const uint8_t numSpaces = 3;
   - don't add duplicates! You have to change one character at least
 */
 const char ssids[] PROGMEM = {
-"The words of the prophets\n"
-"are written on the subway\n"
-"walls and tenement halls\n"
+"!a   I can't believe\n"
+"!b   It's come to\n"
+"!c   The point where\n"
+"!d   I have to reach\n"
+"!e   Out to you here\n"
 };
 
 char prefixes[]={'!','#','$'};
@@ -188,15 +190,12 @@ void loop() {
       // write MAC address into beacon frame
       memcpy(&beaconPacket[10], macAddr, 6);
       memcpy(&beaconPacket[16], macAddr, 6);
-
-      emptySSID[0]=prefixes[i];
-      Serial.println(emptySSID[0]);
       // reset SSID
       memcpy(&beaconPacket[38], emptySSID, 32);
       Serial.println("memcpy");
       // write new SSID into beacon frame
-      memcpy_P(&beaconPacket[38+numSpaces+1], &ssids[i], ssidLen);
-
+      //memcpy_P(&beaconPacket[38+numSpaces+1], &ssids[i], ssidLen);
+      memcpy_P(&beaconPacket[38], &ssids[i], ssidLen);
       // set channel for beacon frame
       beaconPacket[82] = wifi_channel;
 
