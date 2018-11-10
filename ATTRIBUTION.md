@@ -1,5 +1,5 @@
 
-Based on prior work at:
+Code based on prior work at:
 
 https://github.com/Tnze/esp32_beaconSpam
 
