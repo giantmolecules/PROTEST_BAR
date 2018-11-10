@@ -1,5 +1,5 @@
 
-#SOFTWARE
+# SOFTWARE
 
 
 MIT License
@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-#HARDWARE
+# HARDWARE
 
 
 Hardware design is released as a creative commons attribution share-alike non-commercial license.
