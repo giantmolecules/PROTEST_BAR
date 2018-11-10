@@ -1,6 +1,6 @@
-===================
+
 SOFTWARE
-===================
+
 
 MIT License
 
@@ -24,9 +24,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-===================
+
 HARDWARE
-===================
+
 
 Hardware design is released as a creative commons attribution share-alike non-commercial license.
 
