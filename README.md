@@ -2,5 +2,5 @@
 
 # PROTEST_BAR
 
-## a tool for electronic disobediance in wireless infrastructure space
+## a tool for electronic disobedience in wireless infrastructure space
 
