@@ -7,8 +7,8 @@
 const char* ssid = "ESP32";  // Enter SSID here
 
 /* Put IP Address details */
-IPAddress local_ip(192,168,1,1);
-IPAddress gateway(192,168,1,1);
+IPAddress local_ip(10,10,10,1);
+IPAddress gateway(10,10,10,1);
 IPAddress subnet(255,255,255,0);
 
 WebServer server(80);

@@ -41,7 +41,7 @@ int pastTime = 0;
 bool toggle = false;
 const byte DNS_PORT = 53;
 
-IPAddress apIP(192, 168, 1, 1);
+IPAddress apIP(11, 11, 11, 1);
 DNSServer dnsServer;
 WiFiServer server(80);
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, PIN, NEO_GRBW + NEO_KHZ800);
@@ -92,7 +92,9 @@ void loop() {
   }
 
   dnsServer.processNextRequest();
+  
   WiFiClient client = server.available();   // listen for incoming clients
+  
   if (client) {
     String currentLine = "";
     while (client.connected()) {
@@ -132,7 +134,7 @@ void updateLED() {
   values[0] = temp;
 
   for (int i = 0; i < strip.numPixels(); i++) {
-    uint32_t rgbcolor = strip.gamma32(strip.ColorHSV(10922, 1, values[i]));
+    uint32_t rgbcolor = strip.gamma32(strip.ColorHSV(75000, 10, values[i]));
     strip.setPixelColor(i, rgbcolor);
   }
 
