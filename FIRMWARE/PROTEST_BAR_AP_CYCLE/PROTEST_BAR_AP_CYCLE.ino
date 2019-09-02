@@ -4,7 +4,7 @@
 
 
 //  August 31, 2019
-//  PROTEST_BAR_CAPTIVE_AP_CYCLE
+//  PROTEST_BAR_AP_CYCLE
 //  Brett Ian Balogh
 //  brettbalogh@gmail.com
 
@@ -13,74 +13,51 @@
 //--------/ INCLUDE /-------------------------------------------------------------
 //--------------------------------------------------------------------------------
 
-#include <Adafruit_NeoPixel.h>
+//#include <Adafruit_NeoPixel.h>
+#include <NeoPixelBus.h>
 #include <WiFi.h>
 
 //--------------------------------------------------------------------------------
 //--------/ DEFINE /--------------------------------------------------------------
 //--------------------------------------------------------------------------------
 
-#define PIN 12
+#define PIN 21
 #define NUM_LEDS 8
+#define STATUS_LED 13
 
 //--------------------------------------------------------------------------------
 //--------/ DECLARE /-------------------------------------------------------------
 //--------------------------------------------------------------------------------
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, PIN, NEO_GRBW + NEO_KHZ800);
+NeoPixelBus<NeoGrbwFeature, Neo800KbpsMethod> strip(NUM_LEDS, PIN);
 
-byte neopix_gamma[] = {
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,
-    1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  2,  2,  2,  2,  2,  2,
-    2,  3,  3,  3,  3,  3,  3,  3,  4,  4,  4,  4,  4,  5,  5,  5,
-    5,  6,  6,  6,  6,  7,  7,  7,  7,  8,  8,  8,  9,  9,  9, 10,
-   10, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16,
-   17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 24, 24, 25,
-   25, 26, 27, 27, 28, 29, 29, 30, 31, 32, 32, 33, 34, 35, 35, 36,
-   37, 38, 39, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 50,
-   51, 52, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 66, 67, 68,
-   69, 70, 72, 73, 74, 75, 77, 78, 79, 81, 82, 83, 85, 86, 87, 89,
-   90, 92, 93, 95, 96, 98, 99,101,102,104,105,107,109,110,112,114,
-  115,117,119,120,122,124,126,127,129,131,133,135,137,138,140,142,
-  144,146,148,150,152,154,156,158,160,162,164,167,169,171,173,175,
-  177,180,182,184,186,189,191,193,196,198,200,203,205,208,210,213,
-  215,218,220,223,225,228,231,233,236,239,241,244,247,249,252,255 };
-
-/* Put your SSID & Password */
 String ssids[] = {
-  "ABUSE",
-  "OF",
-  "POWER",
-  "COMES",
-  "AS",
-  "NO",
-  "SURPRISE"
+  "       ABUSE",
+  "      OF",
+  "     POWER",
+  "    COMES",
+  "   AS",
+  "  NO",
+  " SURPRISE"
 };
 
-char prefixes[] PROGMEM = {'!', '"', '#', '$', '%', '&', '(', ')', '*', '+', '-', '.'};
+char prefixes[] = {'!', '"', '#', '$', '%', '&', '(', ')', '*', '+', '-', '.'};
 
 char bssid[32];
 int values[] = {16, 32, 64, 127, 255, 127, 64, 32};
 int pastTime = 0;
-int interval = 250;
+int interval = 100;
 int counter = 0;
-
-/* Put IP Address details */
-IPAddress local_ip(10, 10, 10, 10);
-IPAddress gateway(10, 10, 10, 10);
-IPAddress subnet(255, 255, 255, 0);
+bool toggle = false;
 
 //--------------------------------------------------------------------------------
 //--------/ SETUP /---------------------------------------------------------------
 //--------------------------------------------------------------------------------
 
 void setup() {
-  Serial.begin(115200);
-  pinMode(13, OUTPUT);
-  strip.setBrightness(50);
-  strip.begin();
-  strip.show(); // Initialize all pixels to 'off'
+  pinMode(STATUS_LED, OUTPUT);
+  strip.Begin();
+  strip.Show(); // Initialize all pixels to 'off'
 }
 
 //--------------------------------------------------------------------------------
@@ -89,18 +66,21 @@ void setup() {
 
 void loop() {
   if (millis() - pastTime > interval) {
-    String ssidString;
-    int index = counter % 7;
-    ssidString += prefixes[index];
-    ssidString += "  ";
-    ssidString += ssids[index];
-    ssidString.toCharArray(bssid, 32);
-    WiFi.softAP(bssid, NULL);
-    WiFi.softAPConfig(local_ip, gateway, subnet);
-    //blink();
-    delay(5);
-    pulseWhite(2);
-    counter++;
+    if (toggle) {
+      String ssidString;
+      int index = counter % 7;
+      //ssidString += prefixes[index];
+      //ssidString += "  ";
+      ssidString += ssids[index];
+      ssidString.toCharArray(bssid, 32);
+      WiFi.softAP(bssid, NULL);
+      blink();
+      counter++;
+    }
+    if (!toggle) {
+      updateLED();
+    }
+    toggle = !toggle;
     pastTime = millis();
   }
 }
@@ -109,51 +89,38 @@ void loop() {
 //--------/ FUNCTIONS /-----------------------------------------------------------
 //--------------------------------------------------------------------------------
 
+
+
+//--------/ blink /---------------------------------------------------------------
+
 void blink() {
-  digitalWrite(13, HIGH);
+  digitalWrite(STATUS_LED, HIGH);
   delay(20);
-  digitalWrite(13, LOW);
+  digitalWrite(STATUS_LED, LOW);
 }
 
+//--------/ updateLED /-----------------------------------------------------------
+
 void updateLED() {
-  
-  //strip.show();
-  
+
   int temp = values[7];
 
-  for (int i = strip.numPixels() - 1; i >= 1; i--) {
+  for (int i = NUM_LEDS - 1; i >= 1; i--) {
     values[i] = values[i - 1];
   }
 
   values[0] = temp;
-  strip.clear();
-  for (int i = 0; i < strip.numPixels(); i++) {
-    //uint32_t rgbcolor = strip.gamma32(strip.ColorHSV(0, 0, values[i]));
-    //strip.setPixelColor(i, rgbcolor);
-    strip.setPixelColor(i, 0, 0, 0, values[i]);
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    strip.SetPixelColor(i, RgbwColor(0, 0, 0, values[i]));
   }
 
   delay(2);
-  strip.show();
+  strip.Show();
+
 }
 
-void pulseWhite(uint8_t wait) {
-  for(int j = 0; j < 256 ; j++){
-      for(uint16_t i=0; i<strip.numPixels(); i++) {
-          strip.setPixelColor(i, strip.Color(0,0,0, neopix_gamma[j] ) );
-        }
-        delay(wait);
-        strip.show();
-      }
 
-  for(int j = 255; j >= 0 ; j--){
-      for(uint16_t i=0; i<strip.numPixels(); i++) {
-          strip.setPixelColor(i, strip.Color(0,0,0, neopix_gamma[j] ) );
-        }
-        delay(wait);
-        strip.show();
-      }
-}
 
 //--------------------------------------------------------------------------------
 //--------/ EOF /-----------------------------------------------------------------
