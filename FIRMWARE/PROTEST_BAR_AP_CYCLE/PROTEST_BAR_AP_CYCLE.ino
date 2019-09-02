@@ -57,7 +57,7 @@ bool toggle = false;
 void setup() {
   pinMode(STATUS_LED, OUTPUT);
   strip.Begin();
-  strip.Show(); // Initialize all pixels to 'off'
+  strip.Show();
 }
 
 //--------------------------------------------------------------------------------
@@ -115,7 +115,7 @@ void updateLED() {
     strip.SetPixelColor(i, RgbwColor(0, 0, 0, values[i]));
   }
 
-  delay(2);
+  delay(1);
   strip.Show();
 
 }
