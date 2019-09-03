@@ -30,7 +30,7 @@
 //--------------------------------------------------------------------------------
 
 NeoPixelBus<NeoGrbwFeature, Neo800KbpsMethod> strip(NUM_LEDS, PIN);
-
+/*
 String ssids[] = {
   "       ABUSE",
   "      OF",
@@ -39,6 +39,14 @@ String ssids[] = {
   "   AS",
   "  NO",
   " SURPRISE"
+};
+*/
+String ssids[] = {
+  "          Your",
+  "        data",
+  "      is",
+  "    a",
+  "  battleground"
 };
 
 char prefixes[] = {'!', '"', '#', '$', '%', '&', '(', ')', '*', '+', '-', '.'};
@@ -68,7 +76,7 @@ void loop() {
   if (millis() - pastTime > interval) {
     if (toggle) {
       String ssidString;
-      int index = counter % 7;
+      int index = counter % 5;
       //ssidString += prefixes[index];
       //ssidString += "  ";
       ssidString += ssids[index];
