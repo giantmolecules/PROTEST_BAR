@@ -30,7 +30,7 @@
 //--------------------------------------------------------------------------------
 
 NeoPixelBus<NeoGrbwFeature, Neo800KbpsMethod> strip(NUM_LEDS, PIN);
-/*
+
 String ssids[] = {
   "       ABUSE",
   "      OF",
@@ -40,7 +40,8 @@ String ssids[] = {
   "  NO",
   " SURPRISE"
 };
-*/
+
+/*
 String ssids[] = {
   "          Your",
   "        data",
@@ -48,13 +49,13 @@ String ssids[] = {
   "    a",
   "  battleground"
 };
-
+*/
 char prefixes[] = {'!', '"', '#', '$', '%', '&', '(', ')', '*', '+', '-', '.'};
 
 char bssid[32];
 int values[] = {16, 32, 64, 127, 255, 127, 64, 32};
 int pastTime = 0;
-int interval = 100;
+int interval = 50;
 int counter = 0;
 bool toggle = false;
 
@@ -76,7 +77,7 @@ void loop() {
   if (millis() - pastTime > interval) {
     if (toggle) {
       String ssidString;
-      int index = counter % 5;
+      int index = counter % 7;
       //ssidString += prefixes[index];
       //ssidString += "  ";
       ssidString += ssids[index];
@@ -120,7 +121,7 @@ void updateLED() {
   values[0] = temp;
 
   for (int i = 0; i < NUM_LEDS; i++) {
-    strip.SetPixelColor(i, RgbwColor(0, 0, 0, values[i]));
+    strip.SetPixelColor(i, RgbwColor(0, 0, 0, values[i]/16));
   }
 
   delay(1);
