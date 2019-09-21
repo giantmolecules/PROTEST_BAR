@@ -41,17 +41,6 @@ String ssids[] = {
   " SURPRISE"
 };
 
-/*
-String ssids[] = {
-  "          Your",
-  "        data",
-  "      is",
-  "    a",
-  "  battleground"
-};
-*/
-char prefixes[] = {'!', '"', '#', '$', '%', '&', '(', ')', '*', '+', '-', '.'};
-
 char bssid[32];
 int values[] = {16, 32, 64, 127, 255, 127, 64, 32};
 int pastTime = 0;
