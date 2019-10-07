@@ -110,7 +110,8 @@ void updateLED() {
   values[0] = temp;
 
   for (int i = 0; i < NUM_LEDS; i++) {
-    strip.SetPixelColor(i, RgbwColor(0, 1, 0, values[i]/16));
+    //strip.SetPixelColor(i, RgbwColor(100, 100, 0, values[i]/16));
+    strip.SetPixelColor(i, RgbwColor(values[i]/8+2, values[i]/16-1, 0, 3));
   }
 
   delay(1);
