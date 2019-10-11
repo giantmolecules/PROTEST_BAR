@@ -76,40 +76,31 @@ const char config_html[] PROGMEM = R"rawliteral(
     <br>
     
     <form action="/get">
-        <input type="range" min="0" max="255" value="127" class="slider" id="red">
+        <input type="range" min="0" max="100" value="10" class="slider" name="red">
+        <br>
+        <input type="range" min="0" max="100" value="5" class="slider" name="green">
+        <br>
+        <input type="range" min="0" max="100" value="0" class="slider" name="blue">
+        <br>
+        <input type="range" min="0" max="100" value="0" class="slider" name="white">
+        <br>
         <input type="submit" value="Submit">
     </form><br>
     
     <form action="/get">
-        <input type="range" min="0" max="255" value="127" class="slider" id="green">
-        <input type="submit" value="Submit">
-    </form><br>
-    
-    <form action="/get">
-        <input type="range" min="0" max="255" value="127" class="slider" id="blue">
-        <input type="submit" value="Submit">
-    </form><br>
-    
-    <form action="/get">
-        <input type="range" min="0" max="255" value="127" class="slider" id="white">
+        <textarea id="story" name="story" rows="5" cols="33">
+            It was a dark and stormy night...
+        </textarea>
         <input type="submit" value="Submit">
     </form>
-    
+
     <form action="/get">
-        input5: <textarea id="story" name="story"
-        rows="5" cols="33">
-        It was a dark and stormy night...
-    </textarea>
-    <input type="submit" value="Submit">
+        <input type="submit" name="input6" value="SSID">
     </form>
 
-<form action="/get">
-    <input type="submit" name="input6" value="SSID">
-</form>
-
-<form action="/get">
-    <input type="submit" name="input7" value="WEBSERVER">
-</form>
+    <form action="/get">
+        <input type="submit" name="input7" value="WEBSERVER">
+    </form>
 
 </body>
 </html>
@@ -137,16 +128,16 @@ class CaptiveRequestHandler : public AsyncWebHandler {
           Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
         } else {
           Serial.printf("GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
-          if (p->name().equals("input1")) {
+          if (p->name().equals("red")) {
             red = p->value().toInt();
           }
-          if (p->name().equals("input2")) {
+          if (p->name().equals("green")) {
             green = p->value().toInt();
           }
-          if (p->name().equals("input3")) {
+          if (p->name().equals("blue")) {
             blue = p->value().toInt();
           }
-          if (p->name().equals("input4")) {
+          if (p->name().equals("white")) {
             white = p->value().toInt();
           }
           if (p->name().equals("input5")) {
@@ -204,6 +195,12 @@ void setup() {
       return;
   }
   
+  red = readFile(SPIFFS, "/red.txt").toInt();
+  green = readFile(SPIFFS, "/green.txt").toInt();
+  blue = readFile(SPIFFS, "/blue.txt").toInt();
+  white = readFile(SPIFFS, "/white.txt").toInt();
+  message = readFile(SPIFFS, "/message.txt").toInt();
+  
   switchMode(0);
   
   dnsServer.start(53, "*", WiFi.softAPIP());
@@ -219,7 +216,10 @@ void setup() {
 void loop() {
   
   dnsServer.processNextRequest();
-
+if(millis() - pastTime2 > interval2){
+  switchMode(1);
+  pastTime2=millis();
+}
   
   
   if(flip == 2 && previousMode != 2){
