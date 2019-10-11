@@ -1,0 +1,18 @@
+<!DOCTYPE html><head>
+  <title>ESP Input Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head><body>
+  <form action="/get" target="hidden-form">
+    red (current value %red%): <input type="number" name="red">
+    <input type="submit" value="Submit" onclick="submitMessage()">
+  </form><br>
+  <form action="/get" target="hidden-form">
+    green (current value %green%): <input type="number " name="green">
+    <input type="submit" value="Submit" onclick="submitMessage()">
+  </form><br>
+  <form action="/get" target="hidden-form">
+    blue (current value %blue%): <input type="number " name="blue">
+    <input type="submit" value="Submit" onclick="submitMessage()">
+  </form>
+  <iframe style="display:none" name="hidden-form"></iframe>
+</body></html>

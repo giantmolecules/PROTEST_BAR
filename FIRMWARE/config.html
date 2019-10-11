@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>ESP Input Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  <form action="/get">
+    input1: <input type="text" name="input1">
+    <input type="submit" value="Submit">
+  </form><br>
+  <form action="/get">
+    input2: <input type="text" name="input2">
+    <input type="submit" value="Submit">
+  </form><br>
+  <form action="/get">
+    input3: <input type="text" name="input3">
+    <input type="submit" value="Submit">
+  </form><br>
+  <form action="/get">
+    input4: <input type="text" name="input4">
+    <input type="submit" value="Submit">
+  </form>
+  <form action="/get">
+    input5: <textarea id="story" name="story"
+    rows="5" cols="33">
+    It was a dark and stormy night...
+    </textarea>
+    <input type="submit" value="Submit">
+  </form>
+  <div class="slidecontainer">
+  <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+  </div>
+  <input name="Color Picker" type="color"/>
+  <input type="submit" value="Send Request">
+    <form action="/get">
+    <button class="favorite styled"
+        type="button">
+    Add to favorites
+</button>
+    <input type="submit" value="Submit">
+  </form>
+</body>
+</html>
