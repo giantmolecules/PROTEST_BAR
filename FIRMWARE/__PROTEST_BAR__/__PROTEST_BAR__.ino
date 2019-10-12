@@ -32,12 +32,18 @@ String ssids[] = {
   " SURPRISE"
 };
 
+const char* PARAM_INPUT_1 = "red";
+const char* PARAM_INPUT_2 = "green";
+const char* PARAM_INPUT_3 = "blue";
+const char* PARAM_INPUT_4 = "white";
+const char* PARAM_INPUT_5 = "message";
+
 char bssid[32];
 
 int values[] = {16, 32, 64, 127, 255, 127, 64, 32};
 
 int pastTime1 = 0;
-int interval1 = 50;
+int interval1 = 30;
 
 int pastTime2 = 0;
 int interval2 = 30000;
@@ -88,18 +94,18 @@ const char config_html[] PROGMEM = R"rawliteral(
     </form><br>
     
     <form action="/get">
-        <textarea id="story" name="story" rows="5" cols="33">
+        <textarea name="message" rows="5" cols="33">
             It was a dark and stormy night...
         </textarea>
         <input type="submit" value="Submit">
     </form>
 
-    <form action="/get">
-        <input type="submit" name="input6" value="SSID">
+    <form action="/mode1">
+        <input type="submit" value="SSID">
     </form>
 
-    <form action="/get">
-        <input type="submit" name="input7" value="WEBSERVER">
+    <form action="/mode2">
+        <input type="submit" value="WEBSERVER">
     </form>
 
 </body>
@@ -118,6 +124,7 @@ class CaptiveRequestHandler : public AsyncWebHandler {
     }
 
     void handleRequest(AsyncWebServerRequest *request) {
+      /*
       //List all parameters
       int params = request->params();
       for (int i = 0; i < params; i++) {
@@ -161,29 +168,17 @@ class CaptiveRequestHandler : public AsyncWebHandler {
         Serial.print("WHITE: ");
         Serial.println(white);
       }
-      
-      AsyncResponseStream *response = request->beginResponseStream("text/html");
-      
-      if(mode == 0){
+      */
+        AsyncResponseStream *response = request->beginResponseStream("text/html");
         response->print(config_html);
-      }
-      
-      if(mode == 1){
-
-      }
-
-      if(mode == 2){
-        response->print("<!DOCTYPE html><html><head><title>[ PROTEST_BAR ]</title></head><body>");
-        response->print("<h1>");
-        response->print(message);
-        response->print("</h1>");
-        response->print("</body></html>");
-      }
-      
-      request->send(response);
+        request->send(response);
     }
+    
 };
 
+//--------------------------------------------------------------------------------
+//--------/ SETUP /---------------------------------------------------------------
+//--------------------------------------------------------------------------------
 
 void setup() {
   
@@ -204,7 +199,102 @@ void setup() {
   switchMode(0);
   
   dnsServer.start(53, "*", WiFi.softAPIP());
+/*
+    // Send web page with input fields to client
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send_P(200, "text/html", config_html);
+  });
+*/
+  server.on("/mode1", HTTP_GET, [](AsyncWebServerRequest *request){
+    switchMode(1);
+    request->send(200, "text/plain", "Switching mode, please wait...");
+    
+  });
+    server.on("/mode2", HTTP_GET, [](AsyncWebServerRequest *request){
+      switchMode(2);
+      AsyncResponseStream *response = request->beginResponseStream("text/html");
+        response->print("<!DOCTYPE html><html><head><title>[ PROTEST_BAR ]</title></head><body>");
+        response->print("<h1>");
+        response->print(message);
+        response->print("</h1>");
+        response->print("</body></html>");
+        request->send(response);
+});
+    server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request) {
+      Serial.println("HELLO!");
+    String inputMessage;
+    String inputParam;
+
+    /*
+    // GET input1 value on <ESP_IP>/get?input1=<inputMessage>
+    if (request->hasParam(PARAM_INPUT_1)) {
+      red = request->getParam(PARAM_INPUT_1)->value().toInt();
+      Serial.println("RED: " + red);
+    }
+    // GET input2 value on <ESP_IP>/get?input2=<inputMessage>
+    else if (request->hasParam(PARAM_INPUT_2)) {
+      green = request->getParam(PARAM_INPUT_2)->value().toInt();
+      Serial.println("GREEN: " + green);
+    }
+    // GET input3 value on <ESP_IP>/get?input3=<inputMessage>
+    else if (request->hasParam(PARAM_INPUT_3)) {
+      blue = request->getParam(PARAM_INPUT_3)->value().toInt();
+      Serial.println("BLUE: " + blue);
+    }
+    // GET input4 value on <ESP_IP>/get?input4=<inputMessage>
+    else if (request->hasParam(PARAM_INPUT_4)) {
+      white = request->getParam(PARAM_INPUT_4)->value().toInt();
+      Serial.println("WHITE: " + white);
+    }
+    // GET input5 value on <ESP_IP>/get?input5=<inputMessage>
+    else if (request->hasParam(PARAM_INPUT_5)) {
+      message = request->getParam(PARAM_INPUT_5)->value();
+      Serial.println("MESSAGE: " + message);
+    }
+    else {
+      inputMessage = "No message sent";
+      inputParam = "none";
+    }
+    */
+
+    //List all parameters
+      int params = request->params();
+      for (int i = 0; i < params; i++) {
+        AsyncWebParameter* p = request->getParam(i);
+        if (p->isFile()) { //p->isPost() is also true
+          Serial.printf("FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
+        } else if (p->isPost()) {
+          Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
+        } else {
+          Serial.printf("GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
+          if (p->name().equals("red")) {
+            red = p->value().toInt();
+            writeFile(SPIFFS, "/red.txt", p->value().c_str());
+          }
+          if (p->name().equals("green")) {
+            green = p->value().toInt();
+            writeFile(SPIFFS, "/green.txt", p->value().c_str());
+          }
+          if (p->name().equals("blue")) {
+            blue = p->value().toInt();
+            writeFile(SPIFFS, "/blue.txt", p->value().c_str());
+          }
+          if (p->name().equals("white")) {
+            white = p->value().toInt();
+            writeFile(SPIFFS, "/white.txt", p->value().c_str());
+          }
+          if (p->name().equals("message")) {
+            message = p->value().c_str();
+            writeFile(SPIFFS, "/message.txt", p->value().c_str());
+          }
+         
+        }
+      }
+    viewColor();
+    request->send_P(200, "text/html", config_html);
+  });
   
+  server.onNotFound(notFound);  
   server.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);
   server.begin();
   
@@ -213,26 +303,11 @@ void setup() {
   
 }
 
+//--------------------------------------------------------------------------------
+//--------/ MAIN /----------------------------------------------------------------
+//--------------------------------------------------------------------------------
+
 void loop() {
-  
-  dnsServer.processNextRequest();
-if(millis() - pastTime2 > interval2){
-  switchMode(1);
-  pastTime2=millis();
-}
-  
-  
-  if(flip == 2 && previousMode != 2){
-    switchMode(2);
-    Serial.println("Switching mode to (2)");
-  }
-
-    if(flip == 1 && previousMode != 1){
-    switchMode(1);
-    Serial.println("Switching mode to (1)");
-  }
-
-  
   if(mode == 1){
     if (millis() - pastTime1 > interval1) {
     if (toggle) {
@@ -251,14 +326,20 @@ if(millis() - pastTime2 > interval2){
     pastTime1 = millis();
   }
   }
-
-  if(mode == 2){}
-  
+  else{
+    dnsServer.processNextRequest();
+  }
 }
 
 //--------------------------------------------------------------------------------
 //--------/ FUNCTIONS /-----------------------------------------------------------
 //--------------------------------------------------------------------------------
+
+//--------/ msg2array /-----------------------------------------------------------
+
+String msg2array(String s){
+  
+}
 
 //--------/ notFound /---------------------------------------------------------------
 
@@ -345,6 +426,15 @@ void updateLED() {
   delay(1);
   strip.Show();
 
+}
+
+//--------/ viewColor /-----------------------------------------------------------
+
+void viewColor(){
+  for(int i = 0; i < NUM_LEDS; i++){
+    strip.SetPixelColor(i, RgbwColor(red, green, blue, 1));
+  }
+  strip.Show();
 }
 
 //--------/ switchMode /-----------------------------------------------------------
