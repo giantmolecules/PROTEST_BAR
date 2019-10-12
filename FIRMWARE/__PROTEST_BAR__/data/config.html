@@ -1,0 +1,56 @@
+<!DOCTYPE HTML>
+    <html>
+    <head>
+    <title>[ PROTEST_BAR_CONFIG ]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+    </head>
+    <body>
+    <p>
+    [ PROTEST_BAR ] CONFIGURATION
+    </p>
+    <br>
+
+    <form action="/get">
+    <input type="range" min="0" max="100" value="10" class="slider" name="red" oninput="redOut.value = red.value">
+    <output  id="redOut"> 10</output>
+
+    <br>
+
+    <input type="range" min="0" max="100" value="5" class="slider" name="green" oninput="greenOut.value = green.value">
+    <output  id="greenOut"> 5</output>
+
+    <br>
+
+    <input type="range" min="0" max="100" value="0" class="slider" name="blue" oninput="blueOut.value = blue.value">
+    <output  id="blueOut"> 0</output>
+
+    <br>
+
+    <input type="range" min="0" max="100" value="0" class="slider" name="white" oninput="whiteOut.value = white.value">
+    <output  id="whiteOut"> 0</output>
+
+    <br>
+
+    <input type="submit" value="Submit">
+    
+    </form>
+
+    <br>
+
+    <form action="/get">
+    <textarea name="message" rows="5" cols="33">ABUSE OF POWER COMES AS NO SURPRISE
+    </textarea>
+    <input type="submit" value="Submit">
+    </form>
+
+    <form action="/mode1">
+    <input type="submit" value="SSID">
+    </form>
+
+    <form action="/mode2">
+    <input type="submit" value="WEBSERVER">
+    </form>
+
+    </body>
+    </html>
