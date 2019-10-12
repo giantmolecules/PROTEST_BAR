@@ -32,12 +32,6 @@ String ssids[] = {
     " SURPRISE"
 };
 
-const char* PARAM_INPUT_1 = "red";
-const char* PARAM_INPUT_2 = "green";
-const char* PARAM_INPUT_3 = "blue";
-const char* PARAM_INPUT_4 = "white";
-const char* PARAM_INPUT_5 = "message";
-
 char bssid[32];
 
 int values[] = {16, 32, 64, 127, 255, 127, 64, 32};
@@ -52,8 +46,10 @@ int counter = 0;
 
 bool toggle = false;
 int mode = 0;
+int savedMode = 0;
 int previousMode = 0;
 bool flip = 0;
+bool connected = false;
 
 int red = 0;
 int green = 0;
@@ -65,68 +61,68 @@ String ssid;
 String message;
 /*
 const char config_html[] PROGMEM = R"rawliteral(
-    <!DOCTYPE HTML>
-    <html>
-    <head>
-    <title>ESP Input Form</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-    </style>
-    </head>
-    <body>
-    
-    <p>
-    [ PROTEST_BAR ] CONFIGURATION
-    </p>
-    
-    <br>
-    
-    <form action="/get">
-    <input type="range" min="0" max="100" value="10" class="slider" name="red" oninput="redOut.value = red.value">
-    <output  id="redOut"> 10</output>
-    <br>
-    <input type="range" min="0" max="100" value="5" class="slider" name="green" oninput="greenOut.value = green.value">
-    <output  id="greenOut"> 5</output>
-    <br>
-    <input type="range" min="0" max="100" value="0" class="slider" name="blue" oninput="blueOut.value = blue.value">
-    <output  id="blueOut"> 0</output>
-    <br>
-    <input type="range" min="0" max="100" value="0" class="slider" name="white" oninput="whiteOut.value = white.value">
-    <output  id="whiteOut"> 0</output>
-    <br>
-    <input type="submit" value="Submit">
-    </form><br>
-    
-    <form action="/get">
-    <textarea name="message" rows="5" cols="33">
-    It was a dark and stormy night...
-    </textarea>
-    <input type="submit" value="Submit">
-    </form>
-    
-    <form action="/mode1">
-    <input type="submit" value="SSID">
-    </form>
-    
-    <form action="/mode2">
-    <input type="submit" value="WEBSERVER">
-    </form>
-    
-    </body>
-    </html>
-    
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>ESP Input Form</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+</style>
+</head>
+<body>
+
+<p>
+[ PROTEST_BAR ] CONFIGURATION
+</p>
+
+<br>
+
+<form action="/get">
+<input type="range" min="0" max="100" value="10" class="slider" name="red" oninput="redOut.value = red.value">
+<output  id="redOut"> 10</output>
+<br>
+<input type="range" min="0" max="100" value="5" class="slider" name="green" oninput="greenOut.value = green.value">
+<output  id="greenOut"> 5</output>
+<br>
+<input type="range" min="0" max="100" value="0" class="slider" name="blue" oninput="blueOut.value = blue.value">
+<output  id="blueOut"> 0</output>
+<br>
+<input type="range" min="0" max="100" value="0" class="slider" name="white" oninput="whiteOut.value = white.value">
+<output  id="whiteOut"> 0</output>
+<br>
+<input type="submit" value="Submit">
+</form><br>
+
+<form action="/get">
+<textarea name="message" rows="5" cols="33">
+It was a dark and stormy night...
+</textarea>
+<input type="submit" value="Submit">
+</form>
+
+<form action="/mode1">
+<input type="submit" value="SSID">
+</form>
+
+<form action="/mode2">
+<input type="submit" value="WEBSERVER">
+</form>
+
+</body>
+</html>
+
 )rawliteral";
 */
 class CaptiveRequestHandler : public AsyncWebHandler {
 public:
     CaptiveRequestHandler(){}
     virtual ~CaptiveRequestHandler() {}
-    
+
     bool canHandle(AsyncWebServerRequest *request) {
         //request->addInterestingHeader("ANY");
         return true;
     }
-    
+
     void handleRequest(AsyncWebServerRequest *request) {
         /*
         //List all parameters
@@ -186,23 +182,23 @@ request->send(SPIFFS, "/config.html", String(), false);
 //--------------------------------------------------------------------------------
 
 void setup() {
-    
+
     Serial.begin(115200);
     pinMode(STATUS_LED, OUTPUT);
-    
+
     if(!SPIFFS.begin(true)){
         Serial.println("An Error has occurred while mounting SPIFFS");
         return;
     }
-    
+
     red = readFile(SPIFFS, "/red.txt").toInt();
     green = readFile(SPIFFS, "/green.txt").toInt();
     blue = readFile(SPIFFS, "/blue.txt").toInt();
     white = readFile(SPIFFS, "/white.txt").toInt();
     message = readFile(SPIFFS, "/message.txt").toInt();
-    
+    savedMode = readFile(SPIFFS, "/mode.txt").toInt();
     switchMode(0);
-    
+
     dnsServer.start(53, "*", WiFi.softAPIP());
     /*
     // Send web page with input fields to client
@@ -211,21 +207,23 @@ void setup() {
 });
 */
 
-  server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
+server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(SPIFFS, "/style.css", "text/css");
-  });
+});
 /*
-    server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "/script.js", "application/javascript");
-  });
-  */
+server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request){
+request->send(SPIFFS, "/script.js", "application/javascript");
+});
+*/
 server.on("/mode1", HTTP_GET, [](AsyncWebServerRequest *request){
     switchMode(1);
+    writeFile(SPIFFS, "/mode.txt", "1");
     request->send(200, "text/plain", "Switching mode. This window will close. Please wait...");
-    
+
 });
 server.on("/mode2", HTTP_GET, [](AsyncWebServerRequest *request){
     switchMode(2);
+    writeFile(SPIFFS, "/mode.txt", "2");
     AsyncResponseStream *response = request->beginResponseStream("text/html");
     response->print("<!DOCTYPE html><html><head><title>[ PROTEST_BAR ]</title></head><body>");
     response->print("<h1>");
@@ -238,7 +236,7 @@ server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request) {
     Serial.println("HELLO!");
     String inputMessage;
     String inputParam;
-    
+
     /*
     // GET input1 value on <ESP_IP>/get?input1=<inputMessage>
     if (request->hasParam(PARAM_INPUT_1)) {
@@ -300,8 +298,9 @@ for (int i = 0; i < params; i++) {
         if (p->name().equals("message")) {
             message = p->value().c_str();
             writeFile(SPIFFS, "/message.txt", p->value().c_str());
+            //msg2array(message.c_str());
         }
-        
+
     }
 }
 viewColor();
@@ -312,7 +311,8 @@ request->send(SPIFFS, "/config.html", String(), false,processor);
 server.onNotFound(notFound);
 server.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);
 server.begin();
-
+WiFi.onEvent(WiFiStationConnected, SYSTEM_EVENT_AP_STACONNECTED);
+WiFi.onEvent(WiFiStationDisconnected, SYSTEM_EVENT_AP_STADISCONNECTED);
 strip.Begin();
 strip.Show();
 startUp();
@@ -323,6 +323,14 @@ startUp();
 //--------------------------------------------------------------------------------
 
 void loop() {
+
+    if(mode == 0){
+        if (millis() - pastTime2 > interval2) {
+            if(connected == false){
+                switchMode(savedMode);
+            }
+        }
+    }
     if(mode == 1){
         if (millis() - pastTime1 > interval1) {
             if (toggle) {
@@ -342,6 +350,8 @@ void loop() {
         }
     }
     else{
+
+        //Serial.println(client);
         dnsServer.processNextRequest();
     }
 }
@@ -350,12 +360,37 @@ void loop() {
 //--------/ FUNCTIONS /-----------------------------------------------------------
 //--------------------------------------------------------------------------------
 
-//--------/ msg2array /-----------------------------------------------------------
-
-String msg2array(String s){
-    
+void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info){
+    Serial.println("CONNECTED");
+    connected = true;
 }
 
+void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info){
+    Serial.println("DISCONNECTED");
+    connected = false;
+}
+
+//--------/ msg2array /-----------------------------------------------------------
+/*
+int msg2array(char s[]){
+char buff[10];
+//int len = s.length();
+int lineCounter = 0;
+for(int i = 0; i < sizeof(s); i++){
+if(s.[i]==';'){
+ssids[lineCounter] = buff;
+Serial.print("ssids[");
+Serial.print(lineCounter);
+Serial.print("]: ");
+Serial.println(ssids[lineCounter]);
+lineCounter++;
+}
+buff += s[i];
+}
+lineCounter = 0;
+buff="";
+}
+*/
 //--------/ notFound /---------------------------------------------------------------
 
 void notFound(AsyncWebServerRequest *request) {
@@ -401,14 +436,14 @@ void writeFile(fs::FS &fs, const char * path, const char * message){
 // Replaces placeholder with stored values
 String processor(const String& var){
     //Serial.println(var);
-    if(var == "inputString"){
-        return readFile(SPIFFS, "/inputString.txt");
+    if(var == "red"){
+        return readFile(SPIFFS, "/red.txt");
     }
-    else if(var == "inputInt"){
-        return readFile(SPIFFS, "/inputInt.txt");
+    else if(var == "green"){
+        return readFile(SPIFFS, "/green.txt");
     }
-    else if(var == "inputFloat"){
-        return readFile(SPIFFS, "/inputFloat.txt");
+    else if(var == "blue"){
+        return readFile(SPIFFS, "/blue.txt");
     }
     return String();
 }
@@ -425,22 +460,22 @@ void blink() {
 //--------/ updateLED /-----------------------------------------------------------
 
 void updateLED() {
-    
+
     int temp = values[7];
-    
+
     for (int i = NUM_LEDS - 1; i >= 1; i--) {
         values[i] = values[i - 1];
     }
-    
+
     values[0] = temp;
-    
+
     for (int i = 0; i < NUM_LEDS; i++) {
         strip.SetPixelColor(i, RgbwColor(red, green, blue, values[i] / 16));
     }
-    
+
     //delay(1);
     strip.Show();
-    
+
 }
 
 //--------/ viewColor /-----------------------------------------------------------
@@ -460,15 +495,15 @@ void startUp(){
         strip.Show();
         delay(200);
     }
-    
+
 }
 
 //--------/ switchMode /-----------------------------------------------------------
 
 void switchMode(int m){
-  
+
     previousMode = mode;
-    
+
     if(m==0){
         WiFi.mode(WIFI_AP);
         mac = String(WiFi.macAddress());
@@ -481,7 +516,7 @@ void switchMode(int m){
         Serial.println();
         mode = 0;
     }
-    
+
     if(m==1){
         WiFi.mode(WIFI_AP);
         mac = String(WiFi.macAddress());
@@ -492,7 +527,7 @@ void switchMode(int m){
         Serial.println();
         mode = 1;
     }
-    
+
     if(m==2){
         WiFi.mode(WIFI_AP);
         mac = String(WiFi.macAddress());
