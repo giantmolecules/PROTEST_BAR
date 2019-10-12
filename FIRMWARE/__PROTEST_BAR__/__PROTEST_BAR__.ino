@@ -3,6 +3,7 @@
 #include <AsyncTCP.h>
 #include "ESPAsyncWebServer.h"
 #include <NeoPixelBus.h>
+//#include <NeoPixelBrightnessBus.h>
 #include <SPIFFS.h>
 
 DNSServer dnsServer;
@@ -21,6 +22,7 @@ AsyncWebServer server(80);
 //--------------------------------------------------------------------------------
 
 NeoPixelBus<NeoGrbwFeature, Neo800KbpsMethod> strip(NUM_LEDS, PIN);
+//NeoPixelBrightnessBus<NeoGrbFeature, Neo800KbpsMethod> strip(NUM_LEDS, PIN);
 
 String ssids[] = {
     "       ABUSE",
@@ -197,6 +199,7 @@ void setup() {
     white = readFile(SPIFFS, "/white.txt").toInt();
     message = readFile(SPIFFS, "/message.txt").toInt();
     savedMode = readFile(SPIFFS, "/mode.txt").toInt();
+    interval1 = readFile(SPIFFS, "/interval.txt").toInt();
     switchMode(0);
 
     dnsServer.start(53, "*", WiFi.softAPIP());
@@ -224,6 +227,7 @@ server.on("/mode1", HTTP_GET, [](AsyncWebServerRequest *request){
 server.on("/mode2", HTTP_GET, [](AsyncWebServerRequest *request){
     switchMode(2);
     writeFile(SPIFFS, "/mode.txt", "2");
+    /*
     AsyncResponseStream *response = request->beginResponseStream("text/html");
     response->print("<!DOCTYPE html><html><head><title>[ PROTEST_BAR ]</title></head><body>");
     response->print("<h1>");
@@ -231,6 +235,8 @@ server.on("/mode2", HTTP_GET, [](AsyncWebServerRequest *request){
     response->print("</h1>");
     response->print("</body></html>");
     request->send(response);
+    */
+    request->send(200, "text/plain", message);
 });
 server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request) {
     Serial.println("HELLO!");
@@ -294,6 +300,10 @@ for (int i = 0; i < params; i++) {
         if (p->name().equals("white")) {
             white = p->value().toInt();
             writeFile(SPIFFS, "/white.txt", p->value().c_str());
+        }
+        if (p->name().equals("interval")) {
+            interval1 = p->value().toInt();
+            writeFile(SPIFFS, "/interval.txt", p->value().c_str());
         }
         if (p->name().equals("message")) {
             message = p->value().c_str();
@@ -491,7 +501,7 @@ void viewColor(){
 
 void startUp(){
     for(int i = 0; i < NUM_LEDS; i++){
-        strip.SetPixelColor(i, RgbwColor(red, green, blue, 1));
+        //strip.SetBrightness(255/NUM_LEDS*i);
         strip.Show();
         delay(200);
     }
