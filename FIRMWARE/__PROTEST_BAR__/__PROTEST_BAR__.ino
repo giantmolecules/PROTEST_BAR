@@ -37,7 +37,7 @@ char bssid[32];
 int values[] = {16, 32, 64, 127, 255, 127, 64, 32};
 
 int pastTime1 = 0;
-int interval1 = 30;
+int interval1 = 20;
 
 int pastTime2 = 0;
 int interval2 = 30000;
