@@ -502,6 +502,7 @@ void viewColor(){
 void startUp(){
     for(int i = 0; i < NUM_LEDS; i++){
         //strip.SetBrightness(255/NUM_LEDS*i);
+        strip.SetPixelColor(i, RgbwColor(red, green, blue, values[i] / 16));
         strip.Show();
         delay(200);
     }
