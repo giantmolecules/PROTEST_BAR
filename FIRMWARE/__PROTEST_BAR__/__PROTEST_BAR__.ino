@@ -3,7 +3,6 @@
 #include <AsyncTCP.h>
 #include "ESPAsyncWebServer.h"
 #include <NeoPixelBus.h>
-//#include <NeoPixelBrightnessBus.h>
 #include <SPIFFS.h>
 
 DNSServer dnsServer;
@@ -22,18 +21,7 @@ AsyncWebServer server(80);
 //--------------------------------------------------------------------------------
 
 NeoPixelBus<NeoGrbwFeature, Neo800KbpsMethod> strip(NUM_LEDS, PIN);
-//NeoPixelBrightnessBus<NeoGrbFeature, Neo800KbpsMethod> strip(NUM_LEDS, PIN);
-/*
-String ssids[] = {
-  "       ABUSE",
-  "      OF",
-  "     POWER",
-  "    COMES",
-  "   AS",
-  "  NO",
-  " SURPRISE"
-};
-*/
+
 String ssids[8];
 char msgString[13];
 char bssid[32];
@@ -48,8 +36,8 @@ int interval2 = 30000;
 
 int counter = 0;
 
-
 String buff;
+String spaces;
 int pos[64];
 int endPos = 0;
 
@@ -109,33 +97,23 @@ void setup() {
   
   for(int i = 0; i < 8; i++){
     sprintf(msgString,"/message%i.txt", i+1);
-    ssids[i] = String(readFile(SPIFFS, msgString));
+    for (int j = 8; j > i; j--){
+      spaces += ' ';
+    }
+    ssids[i] = spaces + String(readFile(SPIFFS, msgString));
+    spaces = "";
   }
 
-  ssids[
-
-  
-  //message = readFile(SPIFFS, "/message.txt").toInt();
   savedMode = readFile(SPIFFS, "/mode.txt").toInt();
   interval1 = readFile(SPIFFS, "/interval.txt").toInt();
   switchMode(0);
 
   dnsServer.start(53, "*", WiFi.softAPIP());
-  /*
-    // Send web page with input fields to client
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send_P(200, "text/html", config_html);
-    });
-  */
 
   server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/style.css", "text/css");
   });
-  /*
-    server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "/script.js", "application/javascript");
-    });
-  */
+
   server.on("/mode1", HTTP_GET, [](AsyncWebServerRequest * request) {
     switchMode(1);
     writeFile(SPIFFS, "/mode.txt", "1");
@@ -145,53 +123,13 @@ void setup() {
   server.on("/mode2", HTTP_GET, [](AsyncWebServerRequest * request) {
     switchMode(2);
     writeFile(SPIFFS, "/mode.txt", "2");
-    /*
-      AsyncResponseStream *response = request->beginResponseStream("text/html");
-      response->print("<!DOCTYPE html><html><head><title>[ PROTEST_BAR ]</title></head><body>");
-      response->print("<h1>");
-      response->print(message);
-      response->print("</h1>");
-      response->print("</body></html>");
-      request->send(response);
-    */
     request->send(200, "text/plain", message);
   });
+  
   server.on("/get", HTTP_GET, [](AsyncWebServerRequest * request) {
     Serial.println("HELLO!");
     String inputMessage;
     String inputParam;
-
-    /*
-      // GET input1 value on <ESP_IP>/get?input1=<inputMessage>
-      if (request->hasParam(PARAM_INPUT_1)) {
-      red = request->getParam(PARAM_INPUT_1)->value().toInt();
-      Serial.println("RED: " + red);
-      }
-      // GET input2 value on <ESP_IP>/get?input2=<inputMessage>
-      else if (request->hasParam(PARAM_INPUT_2)) {
-      green = request->getParam(PARAM_INPUT_2)->value().toInt();
-      Serial.println("GREEN: " + green);
-      }
-      // GET input3 value on <ESP_IP>/get?input3=<inputMessage>
-      else if (request->hasParam(PARAM_INPUT_3)) {
-      blue = request->getParam(PARAM_INPUT_3)->value().toInt();
-      Serial.println("BLUE: " + blue);
-      }
-      // GET input4 value on <ESP_IP>/get?input4=<inputMessage>
-      else if (request->hasParam(PARAM_INPUT_4)) {
-      white = request->getParam(PARAM_INPUT_4)->value().toInt();
-      Serial.println("WHITE: " + white);
-      }
-      // GET input5 value on <ESP_IP>/get?input5=<inputMessage>
-      else if (request->hasParam(PARAM_INPUT_5)) {
-      message = request->getParam(PARAM_INPUT_5)->value();
-      Serial.println("MESSAGE: " + message);
-      }
-      else {
-      inputMessage = "No message sent";
-      inputParam = "none";
-      }
-    */
 
     //List all parameters
     int params = request->params();
@@ -258,7 +196,6 @@ void setup() {
       }
     }
     viewColor();
-    //request->send_P(200, "text/html", config_html);
     request->send(SPIFFS, "/config.html", String(), false, processor);
   });
 
@@ -324,80 +261,6 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
   connected = false;
 }
 
-//--------/ msg2array /-----------------------------------------------------------
-/*
-int msg2array(String s) {
-  String buff;
-  int len = s.length();
-  int lineCounter = 0;
-  
-  for (int i = 0; i < len; i++) {
-    
-    if (s[i] == ';') {
-      ssids[lineCounter] = buff;
-      Serial.print("ssids[");
-      Serial.print(lineCounter);
-      Serial.print("]: ");
-      Serial.println(ssids[lineCounter]);
-      lineCounter++;
-    }
-    
-    buff += s[i];
-  }
-  lineCounter = 0;
-  buff = "";
-}
-*/
-//--------/ msg2array /-----------------------------------------------------------
-void msg2array(String s) {
-  
-  s.trim();
-  int len = s.length();
-  int counter = 0;
-  buff = "";
-  
-  for (int i = 0; i <= len; i++) {
-    
-    if (s.charAt(i) == ';') {
-      pos[counter]=i;
-      counter++;
-    }
-    
-  }
- counter = 0;
- 
-  for (int i = 0; i < 64; i++){
-    if(pos[i] != NULL){
-      Serial.print(pos[i]);
-      Serial.print(" ");
-    }
-    else{
-      endPos = i;
-    }
-  }
-/*
-  for(int i = 0; i < endPos+1; i++){
-    if(i == 0){
-      ssids[i]=s.substring(pos[i]);
-    }
-    else if(i==endPos){
-      ssids[i]=s.substring(pos[i]);
-    }
-    else{
-    ssids[i] = s.substring(pos[i]+1,pos[i+1]);
-    }
-  }
-*/
-  for(int i = 0; i < sizeof(ssids)-1; i++){
-    Serial.print(ssids[i]);
-    Serial.print(" ");
-  }
- 
-  Serial.println();
- 
-
- 
-}
 //--------/ notFound /---------------------------------------------------------------
 
 void notFound(AsyncWebServerRequest *request) {
