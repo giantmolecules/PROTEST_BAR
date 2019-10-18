@@ -23,7 +23,7 @@ AsyncWebServer server(80);
 
 NeoPixelBus<NeoGrbwFeature, Neo800KbpsMethod> strip(NUM_LEDS, PIN);
 //NeoPixelBrightnessBus<NeoGrbFeature, Neo800KbpsMethod> strip(NUM_LEDS, PIN);
-
+/*
 String ssids[] = {
   "       ABUSE",
   "      OF",
@@ -33,7 +33,9 @@ String ssids[] = {
   "  NO",
   " SURPRISE"
 };
-
+*/
+String ssids[8];
+char msgString[13];
 char bssid[32];
 
 int values[] = {16, 32, 64, 127, 255, 127, 64, 32};
@@ -45,6 +47,11 @@ int pastTime2 = 0;
 int interval2 = 30000;
 
 int counter = 0;
+
+
+String buff;
+int pos[64];
+int endPos = 0;
 
 bool toggle = false;
 int mode = 0;
@@ -61,60 +68,7 @@ int white = 0;
 String mac;
 String ssid;
 String message;
-/*
-  const char config_html[] PROGMEM = R"rawliteral(
-  <!DOCTYPE HTML>
-  <html>
-  <head>
-  <title>ESP Input Form</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-  </style>
-  </head>
-  <body>
 
-  <p>
-  [ PROTEST_BAR ] CONFIGURATION
-  </p>
-
-  <br>
-
-  <form action="/get">
-  <input type="range" min="0" max="100" value="10" class="slider" name="red" oninput="redOut.value = red.value">
-  <output  id="redOut"> 10</output>
-  <br>
-  <input type="range" min="0" max="100" value="5" class="slider" name="green" oninput="greenOut.value = green.value">
-  <output  id="greenOut"> 5</output>
-  <br>
-  <input type="range" min="0" max="100" value="0" class="slider" name="blue" oninput="blueOut.value = blue.value">
-  <output  id="blueOut"> 0</output>
-  <br>
-  <input type="range" min="0" max="100" value="0" class="slider" name="white" oninput="whiteOut.value = white.value">
-  <output  id="whiteOut"> 0</output>
-  <br>
-  <input type="submit" value="Submit">
-  </form><br>
-
-  <form action="/get">
-  <textarea name="message" rows="5" cols="33">
-  It was a dark and stormy night...
-  </textarea>
-  <input type="submit" value="Submit">
-  </form>
-
-  <form action="/mode1">
-  <input type="submit" value="SSID">
-  </form>
-
-  <form action="/mode2">
-  <input type="submit" value="WEBSERVER">
-  </form>
-
-  </body>
-  </html>
-
-  )rawliteral";
-*/
 class CaptiveRequestHandler : public AsyncWebHandler {
   public:
     CaptiveRequestHandler() {}
@@ -126,54 +80,6 @@ class CaptiveRequestHandler : public AsyncWebHandler {
     }
 
     void handleRequest(AsyncWebServerRequest *request) {
-      /*
-        //List all parameters
-        int params = request->params();
-        for (int i = 0; i < params; i++) {
-        AsyncWebParameter* p = request->getParam(i);
-        if (p->isFile()) { //p->isPost() is also true
-        Serial.printf("FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
-        } else if (p->isPost()) {
-        Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
-        } else {
-        Serial.printf("GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
-        if (p->name().equals("red")) {
-        red = p->value().toInt();
-        }
-        if (p->name().equals("green")) {
-        green = p->value().toInt();
-        }
-        if (p->name().equals("blue")) {
-        blue = p->value().toInt();
-        }
-        if (p->name().equals("white")) {
-        white = p->value().toInt();
-        }
-        if (p->name().equals("input5")) {
-        message = p->value().c_str();
-        }
-        if (p->name().equals("input6")) {
-        flip = 1;
-        //switchMode(0);
-        }
-        if (p->name().equals("input7")) {
-        flip = 2;
-        //switchMode(1);
-        }
-        }
-        Serial.print("RED: ");
-        Serial.println(red);
-        Serial.print("GREEN: ");
-        Serial.println(green);
-        Serial.print("BLUE: ");
-        Serial.println(blue);
-        Serial.print("WHITE: ");
-        Serial.println(white);
-        }
-      */
-      //AsyncResponseStream *response = request->beginResponseStream("text/html");
-      //response->print(config_html);
-      //request->send(response);
       request->send(SPIFFS, "/config.html", String(), false);
     }
 
@@ -185,8 +91,11 @@ class CaptiveRequestHandler : public AsyncWebHandler {
 
 void setup() {
 
-  Serial.begin(115200);
+  Serial.begin(9600);
   pinMode(STATUS_LED, OUTPUT);
+    for(int i = 0; i < 64; i++){
+    pos[i] = NULL;
+  }
 
   if (!SPIFFS.begin(true)) {
     Serial.println("An Error has occurred while mounting SPIFFS");
@@ -197,7 +106,16 @@ void setup() {
   green = readFile(SPIFFS, "/green.txt").toInt();
   blue = readFile(SPIFFS, "/blue.txt").toInt();
   white = readFile(SPIFFS, "/white.txt").toInt();
-  message = readFile(SPIFFS, "/message.txt").toInt();
+  
+  for(int i = 0; i < 8; i++){
+    sprintf(msgString,"/message%i.txt", i+1);
+    ssids[i] = String(readFile(SPIFFS, msgString));
+  }
+
+  ssids[
+
+  
+  //message = readFile(SPIFFS, "/message.txt").toInt();
   savedMode = readFile(SPIFFS, "/mode.txt").toInt();
   interval1 = readFile(SPIFFS, "/interval.txt").toInt();
   switchMode(0);
@@ -305,12 +223,38 @@ void setup() {
           interval1 = p->value().toInt();
           writeFile(SPIFFS, "/interval.txt", p->value().c_str());
         }
-        if (p->name().equals("message")) {
+        if (p->name().equals("message1")) {
           message = p->value().c_str();
-          writeFile(SPIFFS, "/message.txt", p->value().c_str());
-          msg2array(message);
+          writeFile(SPIFFS, "/message1.txt", p->value().c_str());
         }
-
+        if (p->name().equals("message2")) {
+          message = p->value().c_str();
+          writeFile(SPIFFS, "/message2.txt", p->value().c_str());
+        }
+        if (p->name().equals("message3")) {
+          message = p->value().c_str();
+          writeFile(SPIFFS, "/message3.txt", p->value().c_str());
+        }
+        if (p->name().equals("message4")) {
+          message = p->value().c_str();
+          writeFile(SPIFFS, "/message4.txt", p->value().c_str());
+        }
+        if (p->name().equals("message5")) {
+          message = p->value().c_str();
+          writeFile(SPIFFS, "/message5.txt", p->value().c_str());
+        }
+        if (p->name().equals("message6")) {
+          message = p->value().c_str();
+          writeFile(SPIFFS, "/message6.txt", p->value().c_str());
+        }
+        if (p->name().equals("message7")) {
+          message = p->value().c_str();
+          writeFile(SPIFFS, "/message7.txt", p->value().c_str());
+        }
+        if (p->name().equals("message8")) {
+          message = p->value().c_str();
+          writeFile(SPIFFS, "/message8.txt", p->value().c_str());
+        }
       }
     }
     viewColor();
@@ -379,14 +323,16 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
   Serial.println("DISCONNECTED");
   connected = false;
 }
-/*
-//--------/ msg2array /-----------------------------------------------------------
 
+//--------/ msg2array /-----------------------------------------------------------
+/*
 int msg2array(String s) {
   String buff;
   int len = s.length();
   int lineCounter = 0;
+  
   for (int i = 0; i < len; i++) {
+    
     if (s[i] == ';') {
       ssids[lineCounter] = buff;
       Serial.print("ssids[");
@@ -395,6 +341,7 @@ int msg2array(String s) {
       Serial.println(ssids[lineCounter]);
       lineCounter++;
     }
+    
     buff += s[i];
   }
   lineCounter = 0;
@@ -402,20 +349,55 @@ int msg2array(String s) {
 }
 */
 //--------/ msg2array /-----------------------------------------------------------
-/*
-std::vector<String> msg2array(String msg){
-  std::vector<String> subStrings;
-  int j=0;
-  for(int i =0; i < msg.length(); i++){
-    if(msg.charAt(i) == ','){
-      subStrings.push_back(msg.substring(j,i));
-      j = i+1;
+void msg2array(String s) {
+  
+  s.trim();
+  int len = s.length();
+  int counter = 0;
+  buff = "";
+  
+  for (int i = 0; i <= len; i++) {
+    
+    if (s.charAt(i) == ';') {
+      pos[counter]=i;
+      counter++;
+    }
+    
+  }
+ counter = 0;
+ 
+  for (int i = 0; i < 64; i++){
+    if(pos[i] != NULL){
+      Serial.print(pos[i]);
+      Serial.print(" ");
+    }
+    else{
+      endPos = i;
     }
   }
-  subStrings.push_back(msg.substring(j,msg.length())); //to grab the last value of the string
-  return subStrings;
-}
+/*
+  for(int i = 0; i < endPos+1; i++){
+    if(i == 0){
+      ssids[i]=s.substring(pos[i]);
+    }
+    else if(i==endPos){
+      ssids[i]=s.substring(pos[i]);
+    }
+    else{
+    ssids[i] = s.substring(pos[i]+1,pos[i+1]);
+    }
+  }
 */
+  for(int i = 0; i < sizeof(ssids)-1; i++){
+    Serial.print(ssids[i]);
+    Serial.print(" ");
+  }
+ 
+  Serial.println();
+ 
+
+ 
+}
 //--------/ notFound /---------------------------------------------------------------
 
 void notFound(AsyncWebServerRequest *request) {
