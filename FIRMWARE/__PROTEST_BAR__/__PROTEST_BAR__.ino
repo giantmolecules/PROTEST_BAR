@@ -121,9 +121,28 @@ void setup() {
 
   });
   server.on("/mode2", HTTP_GET, [](AsyncWebServerRequest * request) {
+    AsyncResponseStream *response = request->beginResponseStream("text/html");
     switchMode(2);
     writeFile(SPIFFS, "/mode.txt", "2");
-    request->send(200, "text/plain", message);
+    response->print("<!DOCTYPE html><html><head><title>[PROTEST_BAR]</title></head><body>");
+    response->print(ssid[0]);
+    response->print("<br>");
+    response->print(ssid[1]);
+    response->print("<br>");
+    response->print(ssid[2]);
+    response->print("<br>");
+    response->print(ssid[3]);
+    response->print("<br>");
+    response->print(ssid[4]);
+    response->print("<br>");
+    response->print(ssid[5]);
+    response->print("<br>");
+    response->print(ssid[6]);
+    response->print("<br>");
+    response->print(ssid[7]);
+    response->print("<br>");
+    response->print("</body></html>");
+    request->send(response);
   });
   
   server.on("/get", HTTP_GET, [](AsyncWebServerRequest * request) {
@@ -240,7 +259,7 @@ void loop() {
       pastTime1 = millis();
     }
   }
-  else {
+  else{
 
     //Serial.println(client);
     dnsServer.processNextRequest();
@@ -387,6 +406,8 @@ void switchMode(int m) {
   previousMode = mode;
 
   if (m == 0) {
+    //WiFi.mode(WIFI_OFF);
+    delay(500);
     WiFi.mode(WIFI_AP);
     mac = String(WiFi.macAddress());
     ssid = "[ CONFIG_" + mac.substring(12, 14) + mac.substring(15) + " ]";
@@ -400,6 +421,8 @@ void switchMode(int m) {
   }
 
   if (m == 1) {
+    //WiFi.mode(WIFI_OFF);
+    delay(500);
     WiFi.mode(WIFI_AP);
     mac = String(WiFi.macAddress());
     Serial.println();
@@ -411,7 +434,10 @@ void switchMode(int m) {
   }
 
   if (m == 2) {
+    //WiFi.mode(WIFI_OFF);
+    //delay(500);
     WiFi.mode(WIFI_AP);
+    server.begin();
     mac = String(WiFi.macAddress());
     WiFi.softAP("[ PROTEST_BAR ]");
     Serial.println();
