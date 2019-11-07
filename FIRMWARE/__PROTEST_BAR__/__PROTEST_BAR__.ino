@@ -434,6 +434,7 @@ void switchMode(int m) {
   }
 
   if (m == 2) {
+      server.end();
     //WiFi.mode(WIFI_OFF);
     //delay(500);
     WiFi.mode(WIFI_AP);

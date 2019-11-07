@@ -1,51 +1,60 @@
 <!DOCTYPE HTML>
-    <html>
-    <head>
-    <title>[ PROTEST_BAR_CONFIG ]</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
-    </head>
-    <body>
-    <p>
+<html>
+<head>
+  <title>[ PROTEST_BAR_CONFIG ]</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+</head>
+<body>
+  <p>
     [ PROTEST_BAR ] CONFIGURATION
-    </p>
-    <br>
+  </p>
+  <br>
+  Change LED Color
+  <br>
+  <br>
+  <div>
+    <span>
+      <form action="/get">
+        RED
+        <input type="range" min="0" max="100" value="10" class="slider" name="red" oninput="redOut.value = red.value">
+        <output  id="redOut"> 10</output>
 
-    <form action="/get">
-    <input type="range" min="0" max="100" value="10" class="slider" name="red" oninput="redOut.value = red.value">
-    <output  id="redOut"> 10</output>
+        <br>
+        GREEN
+        <input type="range" min="0" max="100" value="5" class="slider" name="green" oninput="greenOut.value = green.value">
+        <output  id="greenOut"> 5</output>
 
-    <br>
+        <br>
+        BLUE
+        <input type="range" min="0" max="100" value="0" class="slider" name="blue" oninput="blueOut.value = blue.value">
+        <output  id="blueOut"> 0</output>
 
-    <input type="range" min="0" max="100" value="5" class="slider" name="green" oninput="greenOut.value = green.value">
-    <output  id="greenOut"> 5</output>
+        <br>
+        WHITE
+        <input type="range" min="0" max="100" value="0" class="slider" name="white" oninput="whiteOut.value = white.value">
+        <output  id="whiteOut"> 0</output>
 
-    <br>
+        <br>
+        <br>
+        <input type="submit" value="Submit">
 
-    <input type="range" min="0" max="100" value="0" class="slider" name="blue" oninput="blueOut.value = blue.value">
-    <output  id="blueOut"> 0</output>
-
-    <br>
-
-    <input type="range" min="0" max="100" value="0" class="slider" name="white" oninput="whiteOut.value = white.value">
-    <output  id="whiteOut"> 0</output>
-
-    <br>
-
-    <input type="submit" value="Submit">
-
-    </form>
-
-    <form action="/get">
+      </form>
+    </span>
+    <span>
+      <form action="/get">
+        Beacon Interval (ms)
         <input type="text" id="name" name="interval" required
-               minlength="4" maxlength="8" size="10">
-    <input type="submit" value="Submit">
-    </form>
-
-
-    <br>
-
-    <form action="/get">
+        minlength="4" maxlength="8" size="10">
+        <input type="submit" value="Submit">
+      </form>
+    </span>
+  </div>
+  <br>
+  SSID message
+  <br>
+  <br>
+  <form action="/get">
     <textarea name="message1" rows="1" cols="32">ABUSE
     </textarea>
     <br>
@@ -71,16 +80,18 @@
     </textarea>
     <br>
     <input type="submit" value="Submit">
-    </form>
+  </form>
 
 
-    <form action="/mode1">
+  <form action="/mode1">
+    Mode 1
     <input type="submit" value="SSID">
-    </form>
+  </form>
 
-    <form action="/mode2">
+  <form action="/mode2">
+    Mode 2
     <input type="submit" value="WEBSERVER">
-    </form>
+  </form>
 
-    </body>
-    </html>
+</body>
+</html>
